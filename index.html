@@ -189,6 +189,8 @@ select.field { height: 28px; border: 1px solid var(--border); border-radius: var
 
 /* ---------- CodeMirror: tema unico "tk" guidato dai token ---------- */
 .CodeMirror { font-family: var(--mono); font-size: 13px; line-height: 1.55; }
+/* i tab di CodeMirror sono inline-block: senza questo ereditano il text-indent negativo di wrapIndent e diventano larghi zero */
+.CodeMirror .cm-tab { text-indent: 0; }
 .CodeMirror, code, .st-tree, #app-jasper table.diff, .jl-search input, .info-value { font-variant-ligatures: none; font-feature-settings: "liga" 0, "calt" 0; }
 .cm-s-tk.CodeMirror { background: var(--code-bg); color: var(--text); }
 .cm-s-tk .CodeMirror-gutters { background: var(--code-gutter); border-right: 1px solid var(--border); }
@@ -271,9 +273,28 @@ select.field { height: 28px; border: 1px solid var(--border); border-radius: var
 .j-tip-pop .hd { padding: 0 12px 6px; margin-bottom: 4px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
 .j-tip-pop ul { list-style: none; margin: 0; padding: 0; }
 .j-tip-pop li { padding: 2px 12px; font-family: var(--mono); word-break: break-all; }
-.j-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin: 14px 0 16px; }
-.j-opts label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+
+/* Barra opzioni: vista + ingranaggio, allineati a destra */
+.j-opts { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin: 14px 0 16px; }
+.j-settings { position: relative; flex-shrink: 0; }
+.j-set-btn svg { width: 16px; height: 16px; transition: transform .25s ease; }
+.j-set-btn.open { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.j-set-btn.open svg { transform: rotate(60deg); }
+.j-set-pop {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 30;
+  min-width: 270px; max-width: calc(100vw - 32px); padding: 6px;
+  background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: var(--shadow);
+}
+.j-set-pop .hd { padding: 4px 8px 8px; margin-bottom: 4px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.j-set-row { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; white-space: nowrap; }
+.j-set-row:hover { background: var(--surface-3); }
+.j-set-row.ctx { justify-content: space-between; cursor: default; }
+.j-set-row.ctx:hover { background: transparent; }
 .j-hint { color: var(--muted); font-size: 12.5px; margin: 0 0 16px; }
+.app-head-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-wrap: wrap; }
+.j-drop:focus { outline: none; border-color: var(--accent); }
+#app-jasper .banner.warn { background: var(--warn-soft); color: var(--warn); }
+#app-jasper .summary tr.grp td { background: var(--surface-3); font-size: 11.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 6px 12px; }
 
 #app-jasper .banner { border-radius: var(--radius); padding: 14px 18px; margin: 8px 0 14px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
 #app-jasper .banner strong { font-size: 16px; }
@@ -487,7 +508,7 @@ body[data-app="json"] .main { padding-bottom: 24px; }
   <nav class="appnav" aria-label="Strumenti">
     <a class="navbtn" href="#jasper" data-target="jasper">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M13 6h3a2 2 0 0 1 2 2v7.5"/><polyline points="15 3 12 6 15 9"/><path d="M11 18H8a2 2 0 0 1-2-2V8.5"/><polyline points="9 15 12 18 9 21"/></svg>
-      <span class="long">Confronto Jasper</span><span class="short">Jasper</span>
+      <span class="long">Confronto file</span><span class="short">Confronto</span>
     </a>
     <a class="navbtn" href="#json" data-target="json">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3c-2 0-3 1-3 3v4c0 2-1 3-3 3 2 0 3 1 3 3v4c0 2 1 3 3 3"/><path d="M17 3c2 0 3 1 3 3v4c0 2 1 3 3 3-2 0-3 1-3 3v4c0 2-1 3-3 3"/></svg>
@@ -513,8 +534,8 @@ body[data-app="json"] .main { padding-bottom: 24px; }
       <div class="home-grid">
         <a class="home-card" href="#jasper">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M13 6h3a2 2 0 0 1 2 2v7.5"/><polyline points="15 3 12 6 15 9"/><path d="M11 18H8a2 2 0 0 1-2-2V8.5"/><polyline points="9 15 12 18 9 21"/></svg></span>
-          <h2>Confronto report Jasper</h2>
-          <p>Confronta due cartelle di report (main, subreport, immagini) tra Produzione e Test, file per file, con diff riga per riga.</p>
+          <h2>Confronto file</h2>
+          <p>Confronta Produzione e Test: i file di un report Jasper uno per uno, oppure due RAD JSON scompattati blocco per blocco (page function, CSS, innerHTML, eventi…).</p>
           <span class="go">Apri →</span>
         </a>
         <a class="home-card" href="#json">
@@ -538,9 +559,15 @@ body[data-app="json"] .main { padding-bottom: 24px; }
     <div class="app-inner">
       <div class="app-head">
         <div>
-          <h1><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M13 6h3a2 2 0 0 1 2 2v7.5"/><polyline points="15 3 12 6 15 9"/><path d="M11 18H8a2 2 0 0 1-2-2V8.5"/><polyline points="9 15 12 18 9 21"/></svg></span>Confronto report Jasper</h1>
+          <h1><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M13 6h3a2 2 0 0 1 2 2v7.5"/><polyline points="15 3 12 6 15 9"/><path d="M11 18H8a2 2 0 0 1-2-2V8.5"/><polyline points="9 15 12 18 9 21"/></svg></span>Confronto file</h1>
         </div>
-        <button class="btn danger" type="button" id="jClear" disabled>Pulisci</button>
+        <div class="app-head-actions">
+          <div class="seg" id="jMode" role="group" aria-label="Cosa confrontare">
+            <button type="button" data-mode="jasper">Report Jasper</button>
+            <button type="button" data-mode="rad">RAD</button>
+          </div>
+          <button class="btn danger" type="button" id="jClear" disabled>Pulisci</button>
+        </div>
       </div>
 
       <div class="j-pickers">
@@ -552,6 +579,7 @@ body[data-app="json"] .main { padding-bottom: 24px; }
             <div class="muted" id="jInfoProd">Trascina qui i file oppure scegli</div>
           </div>
           <button class="btn" type="button" data-pick="prod"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Scegli file…</button>
+          <button class="btn" type="button" data-paste="prod" hidden title="Incolla il RAD JSON dagli appunti (oppure clicca la zona e premi Ctrl+V)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>Incolla</button>
           <input type="file" id="jInProd" multiple hidden>
         </div>
         <div class="j-drop" id="jDropTest" tabindex="0">
@@ -562,23 +590,32 @@ body[data-app="json"] .main { padding-bottom: 24px; }
             <div class="muted" id="jInfoTest">Trascina qui i file oppure scegli</div>
           </div>
           <button class="btn" type="button" data-pick="test"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Scegli file…</button>
+          <button class="btn" type="button" data-paste="test" hidden title="Incolla il RAD JSON dagli appunti (oppure clicca la zona e premi Ctrl+V)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>Incolla</button>
           <input type="file" id="jInTest" multiple hidden>
         </div>
       </div>
 
       <div class="j-opts">
-        <label><input type="checkbox" id="jWs"> Ignora spazi e tabulazioni</label>
-        <label><input type="checkbox" id="jUuid"> Ignora attributi <code>uuid</code></label>
-        <label>Contesto
-          <select class="field" id="jCtx">
-            <option value="3">3 righe</option>
-            <option value="10">10 righe</option>
-            <option value="all">tutto il file</option>
-          </select>
-        </label>
         <div class="seg" id="jView">
           <button type="button" data-view-mode="sbs">Affiancato</button>
           <button type="button" data-view-mode="inl">In linea</button>
+        </div>
+        <div class="j-settings" id="jSettings">
+          <button type="button" class="btn icon j-set-btn" id="jSetBtn" title="Impostazioni confronto" aria-label="Impostazioni confronto" aria-haspopup="true" aria-expanded="false" aria-controls="jSetPop">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </button>
+          <div class="j-set-pop" id="jSetPop" role="dialog" aria-label="Impostazioni confronto" hidden>
+            <div class="hd">Impostazioni</div>
+            <label class="j-set-row"><input type="checkbox" id="jWs"> Ignora spazi e tabulazioni</label>
+            <label class="j-set-row" id="jUuidRow"><input type="checkbox" id="jUuid"> Ignora attributi <code>uuid</code></label>
+            <label class="j-set-row ctx">Contesto
+              <select class="field" id="jCtx">
+                <option value="3">3 righe</option>
+                <option value="10">10 righe</option>
+                <option value="all">tutto il file</option>
+              </select>
+            </label>
+          </div>
         </div>
       </div>
 
@@ -615,7 +652,7 @@ body[data-app="json"] .main { padding-bottom: 24px; }
         <div class="rad-card-head" tabindex="0" role="button" aria-expanded="true">
           <div class="rad-card-title">
             <span class="rad-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
-            <h2>JSON di input</h2>
+            <h2>RAD JSON</h2>
           </div>
           <svg class="chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </div>
@@ -685,7 +722,7 @@ body[data-app="json"] .main { padding-bottom: 24px; }
           <div class="rad-card-head" tabindex="0" role="button" aria-expanded="true">
             <div class="rad-card-title">
               <span class="rad-ico orange"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
-              <h2>innerHTML Elements</h2>
+              <h2>innerHTML e template</h2>
               <span id="radInnerCount" class="badge blue">0</span>
             </div>
             <svg class="chev" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -776,6 +813,225 @@ window.TK = (function () {
   }
 
   return { apps, ICON_COPY, toast, copy, wrapIndent, register(name, api) { apps[name] = api; } };
+})();
+</script>
+
+<!-- ======================= Modulo RAD condiviso (RAD Viewer + Confronto) ======================= -->
+<script>
+TK.rad = (function () {
+  const UNIT = 4;   // un livello di rientro = 4 spazi = 1 tab
+
+  // Ogni gruppo di UNIT spazi iniziali diventa un tab
+  function spacesToTabs(code) {
+    return code.split('\n').map(line => {
+      let lead = 0;
+      while (lead < line.length && line[lead] === ' ') lead++;
+      if (lead === 0) return line;
+      return '\t'.repeat(Math.floor(lead / UNIT)) + ' '.repeat(lead % UNIT) + line.slice(lead);
+    }).join('\n');
+  }
+
+  const leadOf = l => l.length - l.replace(/^ +/, '').length;
+  const expandLeadTabs = l => l.replace(/^[ \t]+/, ws => ws.replace(/\t/g, ' '.repeat(UNIT)));
+  // "/*" fuori da una stringa (controllo semplice: virgolette bilanciate prima del commento)
+  function opensComment(line) {
+    const i = line.indexOf('/*');
+    if (i < 0 || line.indexOf('*/', i + 2) >= 0) return false;
+    const before = line.slice(0, i);
+    return (before.split('"').length - 1) % 2 === 0 && (before.split("'").length - 1) % 2 === 0 && (before.split('`').length - 1) % 2 === 0;
+  }
+
+  // js-beautify non tocca l'interno dei commenti /* ... */ e ci somma il rientro corrente:
+  // il codice commentato finisce spostato molto a destra. Qui lo si ri-allinea un livello
+  // sotto la riga che apre il commento, mantenendo la struttura interna.
+  function realignBlockComments(code) {
+    const lines = code.split('\n').map(expandLeadTabs);
+    for (let i = 0; i < lines.length; i++) {
+      if (!opensComment(lines[i])) continue;
+      let j = i + 1;
+      while (j < lines.length && lines[j].indexOf('*/') < 0) j++;
+      if (j >= lines.length) break;
+      const body = [];
+      for (let k = i + 1; k <= j; k++) body.push(k);
+      const nonBlank = body.filter(k => lines[k].trim());
+      // stile JSDoc ( * ... ) già allineato: lo lascio stare
+      if (nonBlank.every(k => lines[k].trim().startsWith('*'))) { i = j; continue; }
+      const closeOnly = lines[j].trim() === '*/';
+      const measured = nonBlank.filter(k => !(k === j && closeOnly));
+      if (measured.length) {
+        const min = Math.min(...measured.map(k => leadOf(lines[k])));
+        const base = leadOf(lines[i]);
+        for (const k of measured) lines[k] = ' '.repeat(base + UNIT + leadOf(lines[k]) - min) + lines[k].trimStart();
+        if (closeOnly) lines[j] = ' '.repeat(base) + '*/';
+      }
+      i = j;
+    }
+    return lines.join('\n');
+  }
+
+  function formatCode(code, type) {
+    if (!code) return '';
+    const src = String(code).replace(/\r\n?/g, '\n');
+    const baseOpts = { indent_with_tabs: false, indent_size: UNIT };
+    let result = src;
+    try {
+      if (type === 'css') result = css_beautify(src, { ...baseOpts });
+      else if (type === 'html') result = html_beautify(src, { ...baseOpts, wrap_line_length: 120 });
+      else if (type === 'javascript') result = js_beautify(src, { ...baseOpts, space_in_empty_paren: true });
+    } catch (e) { console.error('Format error:', e); }
+    if (type === 'javascript' || type === 'css') result = realignBlockComments(result);
+    return spacesToTabs(result);
+  }
+
+  // ---------- Estrazione dei blocchi HTML con chiave stabile ----------
+  const clean = s => String(s == null ? '' : s).replace(/^!i18n#/, '').replace(/\s+/g, ' ').trim();
+  const safe = s => clean(s).replace(/[\/\\]/g, '-').slice(0, 80);
+
+  // property dei campi contenuti in un container (al massimo 2, bastano per riconoscerlo)
+  function fieldProps(node, acc) {
+    if (!node || typeof node !== 'object' || acc.length >= 2) return acc;
+    const p = node.fieldModel && node.fieldModel.property;
+    if (p && acc.indexOf(p) < 0) acc.push(p);
+    if (Array.isArray(node.elements)) for (const c of node.elements) fieldProps(c, acc);
+    return acc;
+  }
+
+  // Gli elementi dei RAD non hanno un id: la chiave è "sezione › identificativo", dove
+  // l'identificativo è (in ordine) lo slot (headerElement…), le property dei campi contenuti,
+  // le classi CSS, un id dentro l'HTML, e solo alla fine un progressivo.
+  function htmlBlocks(data) {
+    const out = [], counters = {};
+    const root = data && data.editActivityLayoutModel;
+    if (!root || typeof root !== 'object') return out;
+
+    function walk(node, ctx) {
+      if (Array.isArray(node)) { node.forEach(n => walk(n, ctx)); return; }
+      if (!node || typeof node !== 'object') return;
+      // vale la sezione più esterna: i sectionTitle dei container interni sono spesso residui copiati
+      const section = ctx.section || (node.sectionTitle ? safe(node.sectionTitle) : '');
+      const cls = Array.isArray(node.cssClasses) && node.cssClasses.length ? node.cssClasses.join('.') : '';
+
+      if (typeof node.innerHTML === 'string' && node.innerHTML.trim()) {
+        let ident;
+        const props = fieldProps(node, []);
+        const htmlId = /\bid\s*=\s*["']([^"']+)["']/.exec(node.innerHTML);
+        if (ctx.slot) ident = ctx.slot;
+        else if (props.length) ident = props.join('+');
+        else if (cls) ident = '.' + cls;
+        else if (htmlId) ident = '#' + htmlId[1];
+        else {
+          const base = ctx.cls ? '.' + ctx.cls + ' › elemento' : 'elemento';
+          const ck = section + '|' + base;
+          counters[ck] = (counters[ck] || 0) + 1;
+          ident = base + ' ' + counters[ck];
+        }
+        out.push({ kind: 'innerHTML', type: node.type || 'container', section, ident: safe(ident), html: node.innerHTML, owner: node, field: 'innerHTML' });
+      }
+
+      const fm = node.fieldModel, fc = fm && fm.fieldConfigs;
+      if (fc && typeof fc.template === 'string' && fc.template.trim()) {
+        const ident = fm.property || clean(fm.label) || ('campo ' + (fm.fieldType == null ? '' : fm.fieldType));
+        out.push({ kind: 'template', type: 'template campo', section, ident: safe(ident) || 'template', html: fc.template, owner: fc, field: 'template' });
+      }
+
+      for (const k in node) {
+        if (k === 'fieldModel') continue;
+        const v = node[k];
+        if (v && typeof v === 'object') walk(v, { section, slot: (Array.isArray(v) || k === 'elements') ? null : k, cls: cls || ctx.cls });
+      }
+    }
+    walk(root, { section: '', slot: null, cls: '' });
+
+    const seen = {};
+    for (const b of out) {
+      let p = (b.kind === 'template' ? 'template/' : 'innerHTML/') + (b.section ? b.section + ' › ' : '') + b.ident;
+      seen[p] = (seen[p] || 0) + 1;
+      if (seen[p] > 1) p += ' #' + seen[p];
+      b.path = p + '.html';
+      b.label = p.replace(/^(innerHTML|template)\//, '');
+    }
+    return out;
+  }
+
+  // ---------- Scompattamento in file virtuali (per il Confronto) ----------
+  const SECTIONS = [
+    ['pageFunction', 'Page Function'],
+    ['css', 'CSS Rules'],
+    ['html', 'innerHTML e template'],
+    ['actions', 'Azioni'],
+    ['events', 'Eventi'],
+    ['config', 'Configurazione']
+  ];
+
+  // Chiavi ordinate e stringhe JSON annidate (es. fieldDataSourceConfigs) espanse: il diff
+  // della configurazione non dipende dall'ordine delle proprietà né dagli escape.
+  function normalize(v) {
+    if (Array.isArray(v)) return v.map(normalize);
+    if (v && typeof v === 'object') {
+      const o = {};
+      Object.keys(v).sort().forEach(k => { o[k] = normalize(v[k]); });
+      return o;
+    }
+    if (typeof v === 'string') {
+      const t = v.trim();
+      if ((t[0] === '{' && t.endsWith('}')) || (t[0] === '[' && t.endsWith(']'))) {
+        try { return normalize(JSON.parse(t)); } catch (e) {}
+      }
+    }
+    return v;
+  }
+
+  function explode(data) {
+    const d = JSON.parse(JSON.stringify(data));
+    const files = [], used = {};
+    const add = (section, path, code, lang) => {
+      if (typeof code !== 'string' || !code.trim()) return null;
+      let p = path;
+      used[p] = (used[p] || 0) + 1;
+      if (used[p] > 1) p = p.replace(/(\.\w+)$/, ' #' + used[p] + '$1');
+      files.push({ section, path: p, text: formatCode(code, lang) });
+      return p;
+    };
+    // nel config.json il codice estratto è sostituito dal riferimento al file virtuale
+    const ref = p => '⟶ ' + p;
+
+    const L = d.editActivityLayoutModel;
+    if (L && typeof L === 'object') {
+      let p;
+      if ((p = add('pageFunction', 'pageFunction.js', L.pageFunction, 'javascript'))) L.pageFunction = ref(p);
+      if ((p = add('css', 'cssRules.css', L.cssRules, 'css'))) L.cssRules = ref(p);
+      for (const b of htmlBlocks(d)) {
+        const bp = add('html', b.path, b.html, 'html');
+        if (bp) b.owner[b.field] = ref(bp);
+      }
+    }
+
+    const C = d.editActivityConfigsData;
+    if (C && Array.isArray(C.additionalActivityActions)) {
+      C.additionalActivityActions.forEach((a, i) => {
+        if (!a || typeof a !== 'object') return;
+        const n = safe(a.name) || 'azione ' + (i + 1);
+        ['fn', 'isShow'].forEach(f => {
+          const p = add('actions', 'actions/' + n + '/' + f + '.js', a[f], 'javascript');
+          if (p) a[f] = ref(p);
+        });
+      });
+    }
+
+    const E = d.eventsActivityConfigsData;
+    if (E && Array.isArray(E.beanEvents)) {
+      E.beanEvents.forEach((ev, i) => {
+        if (!ev || typeof ev !== 'object') return;
+        const p = add('events', 'events/' + (safe(ev.eventType) || 'evento ' + (i + 1)) + '.js', ev.eventFn, 'javascript');
+        if (p) ev.eventFn = ref(p);
+      });
+    }
+
+    files.push({ section: 'config', path: 'config.json', text: JSON.stringify(normalize(d), null, 2) });
+    return files;
+  }
+
+  return { UNIT, formatCode, htmlBlocks, explode, SECTIONS };
 })();
 </script>
 
@@ -922,11 +1178,19 @@ window.TK = (function () {
   const fmtSize = n => n == null ? '—' : n < 1024 ? n + ' B' : (n / 1024).toFixed(1).replace('.', ',') + ' KB';
   const extOf = name => { const m = /\.([^./]+)$/.exec(name); return m ? m[1].toLowerCase() : ''; };
   const plural = (n, s, p) => n + ' ' + (n === 1 ? s : p);
+  const cmpName = (x, y) => x.localeCompare(y, 'it', { numeric: true, sensitivity: 'base' });
 
-  const DEF = { ignoreWs: true, ignoreUuid: true, ctx: '3', view: 'sbs' };
+  const DEF = { ignoreWs: true, ignoreUuid: true, ctx: '3', view: 'sbs', mode: 'jasper' };
   let opts = { ...DEF };
   try { Object.assign(opts, JSON.parse(localStorage.getItem('jasperCompareOpts') || '{}')); } catch (e) {}
+  if (opts.mode !== 'rad') opts.mode = 'jasper';
   const saveOpts = () => { try { localStorage.setItem('jasperCompareOpts', JSON.stringify(opts)); } catch (e) {} };
+  const isRad = () => opts.mode === 'rad';
+
+  let results = [], runId = 0, objectUrls = [];
+  // ogni modalità tiene i propri file caricati: passando da Report a RAD e ritorno non si perde nulla
+  const store = { jasper: { prod: null, test: null }, rad: { prod: null, test: null } };
+  let sides = store[opts.mode];
 
   $('#jWs').checked = opts.ignoreWs;
   $('#jUuid').checked = opts.ignoreUuid;
@@ -942,17 +1206,41 @@ window.TK = (function () {
     opts.view = b.dataset.viewMode; saveOpts(); paintView(); renderAll();
   });
 
-  const sides = { prod: null, test: null };
-  const bytesCache = new WeakMap();
+  // ---------- Menu impostazioni (ingranaggio) ----------
+  const setBtn = $('#jSetBtn'), setPop = $('#jSetPop');
+  const isSetOpen = () => !setPop.hidden;
+  function openSettings(open) {
+    setPop.hidden = !open;
+    setBtn.classList.toggle('open', open);
+    setBtn.setAttribute('aria-expanded', String(open));
+  }
+  setBtn.addEventListener('click', e => { e.stopPropagation(); openSettings(!isSetOpen()); });
+  document.addEventListener('click', e => { if (isSetOpen() && !e.target.closest('#jSettings')) openSettings(false); });
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && isSetOpen()) { openSettings(false); setBtn.focus(); }
+  });
+
+  const SECTION_LABEL = {}, SECTION_ORD = {};
+  TK.rad.SECTIONS.forEach(([k, label], i) => { SECTION_LABEL[k] = label; SECTION_ORD[k] = i; });
+
+  const bytesCache = new WeakMap(), encoder = new TextEncoder();
+  // i file veri sono Blob; i blocchi di un RAD scompattato sono oggetti { text, size, section }
   const readBytes = f => {
     let p = bytesCache.get(f);
-    if (!p) { p = f.arrayBuffer().then(b => new Uint8Array(b)); bytesCache.set(f, p); }
+    if (!p) {
+      p = f instanceof Blob ? f.arrayBuffer().then(b => new Uint8Array(b)) : Promise.resolve(encoder.encode(f.text));
+      bytesCache.set(f, p);
+    }
     return p;
   };
   const capOf = side => side === 'prod' ? 'Prod' : 'Test';
 
   const ICON_INFO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
-  const EMPTY_HINT = 'Trascina qui i file oppure scegli';
+  const emptyHint = () => isRad() ? 'Trascina qui il RAD JSON, sceglilo o incollalo' : 'Trascina qui i file oppure scegli';
+  const emptyMsg = () => isRad() ? 'Carica o incolla il RAD JSON di Produzione e di Test da confrontare.' : 'Carica i file di Produzione e di Test da confrontare.';
+  const tipHtml = (head, names) => ' <span class="j-tip"><button type="button" class="j-tip-btn" aria-label="Elenco dei file caricati">' + ICON_INFO +
+    '</button><span class="j-tip-pop" role="tooltip"><div class="hd">' + head + '</div><ul>' +
+    names.map(x => '<li>' + escHtml(x) + '</li>').join('') + '</ul></span></span>';
 
   function paintSide(side) {
     const cap = capOf(side), data = sides[side];
@@ -960,17 +1248,42 @@ window.TK = (function () {
     const n = data ? data.files.size : 0;
     $('#jDrop' + cap).classList.toggle('loaded', n > 0);
     if (!n) {
-      nameEl.textContent = 'File non caricati';
-      info.textContent = data ? 'Nessun file trovato' : EMPTY_HINT;
+      nameEl.textContent = isRad() ? 'RAD non caricato' : 'File non caricati';
+      info.textContent = data ? 'Nessun file trovato' : emptyHint();
+    } else if (isRad()) {
+      nameEl.innerHTML = escHtml(data.radName || 'RAD senza nome') + tipHtml(plural(n, 'blocco', 'blocchi'), [...data.files.keys()]);
+      info.textContent = plural(n, 'blocco', 'blocchi') + ' · ' + data.source;
     } else {
-      const names = [...data.files.keys()];
-      nameEl.innerHTML = 'File caricati <span class="j-tip"><button type="button" class="j-tip-btn" aria-label="Elenco dei file caricati">' + ICON_INFO +
-        '</button><span class="j-tip-pop" role="tooltip"><div class="hd">' + plural(n, 'file', 'file') + '</div><ul>' +
-        names.map(x => '<li>' + escHtml(x) + '</li>').join('') + '</ul></span></span>';
+      nameEl.innerHTML = 'File caricati' + tipHtml(plural(n, 'file', 'file'), [...data.files.keys()]);
       info.textContent = plural(n, 'file', 'file');
     }
     $('#jClear').disabled = !sides.prod && !sides.test;
   }
+
+  function paintMode() {
+    document.querySelectorAll('#jMode button').forEach(b => {
+      const on = b.dataset.mode === opts.mode;
+      b.classList.toggle('on', on);
+      b.setAttribute('aria-pressed', String(on));
+    });
+    $('#jUuidRow').hidden = isRad();
+    document.querySelectorAll('#app-jasper [data-paste]').forEach(b => { b.hidden = !isRad(); });
+    for (const s of ['prod', 'test']) {
+      const inp = $('#jIn' + capOf(s));
+      inp.multiple = !isRad();
+      if (isRad()) inp.accept = '.json,application/json'; else inp.removeAttribute('accept');
+    }
+  }
+
+  $('#jMode').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (!b || b.dataset.mode === opts.mode) return;
+    opts.mode = b.dataset.mode; saveOpts();
+    sides = store[opts.mode];
+    runId++; results = [];
+    paintMode(); paintSide('prod'); paintSide('test');
+    if (sides.prod && sides.test) compare(); else renderAll();
+  });
 
   function setSide(side, data) {
     sides[side] = data;
@@ -983,17 +1296,45 @@ window.TK = (function () {
   function buildSide(fileList) {
     const files = new Map();
     for (const f of fileList) if (!SKIP.test(f.name)) files.set(f.name, f);
-    return { files: new Map([...files].sort((a, b) => a[0].localeCompare(b[0], 'it', { numeric: true, sensitivity: 'base' }))) };
+    return { files: new Map([...files].sort((a, b) => cmpName(a[0], b[0]))) };
   }
 
+  // RAD: un solo JSON per lato, scompattato in un file virtuale per ogni blocco di codice
+  function loadRad(side, text, source) {
+    let data;
+    try { data = JSON.parse(text); } catch (e) { TK.toast('JSON non valido: ' + e.message); return; }
+    if (!data || typeof data !== 'object' || Array.isArray(data)) { TK.toast('Il JSON non sembra un RAD'); return; }
+    const files = new Map();
+    try {
+      for (const f of TK.rad.explode(data)) files.set(f.path, { name: f.path, section: f.section, text: f.text, size: encoder.encode(f.text).length });
+    } catch (e) { console.error(e); TK.toast('Impossibile scompattare il RAD: ' + e.message); return; }
+    setSide(side, { files, radName: data.name || '', source });
+  }
 
   for (const side of ['prod', 'test']) {
     const cap = capOf(side);
     const zone = $('#jDrop' + cap), input = $('#jIn' + cap);
-    zone.addEventListener('click', e => { if (!e.target.closest('.j-tip')) input.click(); });
+    // in modalità RAD un clic sulla zona la seleziona (per incollare con Ctrl+V) invece di aprire il file
+    zone.addEventListener('click', e => {
+      if (e.target.closest('.j-tip, button')) return;
+      if (isRad()) zone.focus(); else input.click();
+    });
     zone.addEventListener('keydown', e => { if (e.target === zone && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); input.click(); } });
+    zone.addEventListener('paste', e => {
+      if (!isRad()) return;
+      const t = e.clipboardData && e.clipboardData.getData('text');
+      if (!t || !t.trim()) return;
+      e.preventDefault();
+      loadRad(side, t, 'incollato');
+    });
     input.addEventListener('click', e => e.stopPropagation());
-    input.addEventListener('change', () => { if (input.files.length) setSide(side, buildSide(input.files)); input.value = ''; });
+    input.addEventListener('change', () => {
+      if (input.files.length) {
+        if (isRad()) { const f = input.files[0]; f.text().then(t => loadRad(side, t, f.name)); }
+        else setSide(side, buildSide(input.files));
+      }
+      input.value = '';
+    });
     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('over'));
     zone.addEventListener('drop', e => {
@@ -1007,12 +1348,24 @@ window.TK = (function () {
         const f = it.getAsFile();
         if (f) files.push(f);
       }
-      if (!files.length) { TK.toast('Le cartelle non vengono caricate: trascina i file'); return; }
-      setSide(side, buildSide(files));
+      if (!files.length) { TK.toast(isRad() ? 'Trascina il file JSON del RAD' : 'Le cartelle non vengono caricate: trascina i file'); return; }
+      if (isRad()) {
+        if (files.length > 1) TK.toast('Uso solo il primo file: ' + files[0].name);
+        files[0].text().then(t => loadRad(side, t, files[0].name));
+      } else setSide(side, buildSide(files));
     });
   }
   document.querySelectorAll('#app-jasper [data-pick]').forEach(b => b.addEventListener('click', e => {
     e.stopPropagation(); $('#jIn' + capOf(b.dataset.pick)).click();
+  }));
+  document.querySelectorAll('#app-jasper [data-paste]').forEach(b => b.addEventListener('click', e => {
+    e.stopPropagation();
+    const side = b.dataset.paste, zone = $('#jDrop' + capOf(side));
+    const fallback = () => { zone.focus(); TK.toast('Premi Ctrl+V per incollare il JSON'); };
+    if (!navigator.clipboard || !navigator.clipboard.readText) { fallback(); return; }
+    navigator.clipboard.readText()
+      .then(t => { if (t && t.trim()) loadRad(side, t, 'incollato'); else TK.toast('Gli appunti sono vuoti'); })
+      .catch(fallback);
   }));
   $('#jClear').addEventListener('click', () => {
     runId++;                       // annulla un eventuale confronto in corso
@@ -1025,7 +1378,6 @@ window.TK = (function () {
   window.addEventListener('dragover', e => e.preventDefault());
   window.addEventListener('drop', e => e.preventDefault());
 
-  let results = [], runId = 0, objectUrls = [];
   const decoder = new TextDecoder('utf-8');
 
   const bytesEqual = (a, b) => {
@@ -1041,14 +1393,27 @@ window.TK = (function () {
 
   async function compare() {
     if (!sides.prod || !sides.test) return;
-    const my = ++runId;
-    const names = [...new Set([...sides.prod.files.keys(), ...sides.test.files.keys()])]
-      .sort((x, y) => x.localeCompare(y, 'it', { numeric: true, sensitivity: 'base' }));
+    const my = ++runId, mode = opts.mode, P = sides.prod, T = sides.test;
+    const secOf = rel => { const f = P.files.get(rel) || T.files.get(rel); return f && f.section; };
+    const names = [...new Set([...P.files.keys(), ...T.files.keys()])];
+    names.sort(mode === 'rad'
+      ? (x, y) => ((SECTION_ORD[secOf(x)] ?? 99) - (SECTION_ORD[secOf(y)] ?? 99)) || cmpName(x, y)
+      : cmpName);
+    const dOpts = { ignoreWs: opts.ignoreWs, ignoreUuid: mode === 'jasper' && opts.ignoreUuid };
 
     const out = await Promise.all(names.map(async (rel, idx) => {
-      const fp = sides.prod.files.get(rel), ft = sides.test.files.get(rel), ext = extOf(rel);
-      const r = { idx, rel, ext, sizeP: fp ? fp.size : null, sizeT: ft ? ft.size : null };
-      if (!fp || !ft) { r.status = fp ? 'onlyProd' : 'onlyTest'; return r; }
+      const fp = P.files.get(rel), ft = T.files.get(rel), ext = extOf(rel);
+      const r = { idx, rel, ext, section: secOf(rel), sizeP: fp ? fp.size : null, sizeT: ft ? ft.size : null };
+      if (!fp || !ft) {
+        r.status = fp ? 'onlyProd' : 'onlyTest';
+        // per un blocco RAD presente da una sola parte mostro comunque il codice
+        if (mode === 'rad') {
+          const lines = splitLines((fp || ft).text);
+          r.kind = 'text'; r.A = fp ? lines : []; r.B = ft ? lines : [];
+          r.model = diffText(r.A, r.B, dOpts);
+        }
+        return r;
+      }
       const [bp, bt] = await Promise.all([readBytes(fp), readBytes(ft)]);
       const isText = TEXT_EXT.has(ext) || (!IMG_EXT.has(ext) && looksText(bp) && looksText(bt));
       r.kind = isText ? 'text' : IMG_EXT.has(ext) ? 'image' : 'binary';
@@ -1056,7 +1421,7 @@ window.TK = (function () {
       if (r.kind === 'text') {
         r.A = splitLines(decoder.decode(bp));
         r.B = splitLines(decoder.decode(bt));
-        r.model = diffText(r.A, r.B, opts);
+        r.model = diffText(r.A, r.B, dOpts);
         r.status = (r.model.adds + r.model.dels) ? 'diff' : 'equiv';
       } else {
         r.status = 'diff';
@@ -1071,7 +1436,7 @@ window.TK = (function () {
 
   const BADGE = {
     same: '<span class="badge ok">Identico</span>',
-    equiv: '<span class="badge ok" title="I byte differiscono solo per fine riga, BOM o per ciò che hai scelto di ignorare (spazi / uuid)">Uguale*</span>',
+    equiv: '<span class="badge ok" title="Differisce solo per fine riga, BOM, formattazione o per ciò che hai scelto di ignorare">Uguale*</span>',
     diff: '<span class="badge ko">Diverso</span>',
     onlyProd: '<span class="badge warn">Solo in Prod</span>',
     onlyTest: '<span class="badge warn">Solo in Test</span>'
@@ -1081,34 +1446,47 @@ window.TK = (function () {
     objectUrls.forEach(u => URL.revokeObjectURL(u));
     objectUrls = [];
     if (!results.length) {
-      $('#jResult').innerHTML = '<div class="empty-state">' + (sides.prod && sides.test ? 'Nessun file da confrontare.' : 'Carica i file di Produzione e di Test da confrontare.') + '</div>';
+      $('#jResult').innerHTML = '<div class="empty-state">' + (sides.prod && sides.test ? 'Nessun elemento da confrontare.' : emptyMsg()) + '</div>';
       return;
     }
+    const rad = isRad();
     const c = { same: 0, equiv: 0, diff: 0, onlyProd: 0, onlyTest: 0 };
     results.forEach(r => c[r.status]++);
     const tot = results.length, missing = c.onlyProd + c.onlyTest;
+    const W = rad
+      ? { all: 'Tutti i ' + tot + ' blocchi sono identici', diff: ['blocco diverso', 'blocchi diversi'], miss: ['blocco presente', 'blocchi presenti'], where: ' in un solo RAD', equiv: ['blocco differisce', 'blocchi differiscono'], col: 'Blocco' }
+      : { all: 'Tutti i ' + tot + ' file sono identici', diff: ['file diverso', 'file diversi'], miss: ['file presente', 'file presenti'], where: ' in una sola cartella', equiv: ['file differisce', 'file differiscono'], col: 'File' };
 
     let h = '';
+    if (rad && (sides.prod.radName || '') !== (sides.test.radName || '')) {
+      h += '<div class="banner warn"><strong>⚠ Stai confrontando due RAD diversi</strong><span>Prod: ' +
+        escHtml(sides.prod.radName || '—') + ' · Test: ' + escHtml(sides.test.radName || '—') + '</span></div>';
+    }
     if (!c.diff && !missing) {
-      h += '<div class="banner ok"><strong>✔ Tutti i ' + tot + ' file sono identici</strong>' +
-        (c.equiv ? '<span>' + plural(c.equiv, 'file differisce', 'file differiscono') + ' solo per fine riga, BOM o elementi ignorati (Uguale*)</span>' : '') + '</div>';
+      h += '<div class="banner ok"><strong>✔ ' + W.all + '</strong>' +
+        (c.equiv ? '<span>' + plural(c.equiv, W.equiv[0], W.equiv[1]) + ' solo per fine riga, BOM o elementi ignorati (Uguale*)</span>' : '') + '</div>';
     } else {
       const parts = [];
-      if (c.diff) parts.push(plural(c.diff, 'file diverso', 'file diversi'));
-      if (missing) parts.push(plural(missing, 'file presente', 'file presenti') + ' in una sola cartella');
+      if (c.diff) parts.push(plural(c.diff, W.diff[0], W.diff[1]));
+      if (missing) parts.push(plural(missing, W.miss[0], W.miss[1]) + W.where);
       h += '<div class="banner ko"><strong>✘ ' + parts.join(', ') + '</strong><span>su ' + tot + ' totali · ' +
         (c.same + c.equiv) + ' uguali</span></div>';
     }
 
-    h += '<table class="summary"><thead><tr><th>File</th><th>Esito</th><th>Differenze</th><th>Prod</th><th>Test</th></tr></thead><tbody>';
+    h += '<table class="summary"><thead><tr><th>' + W.col + '</th><th>Esito</th><th>Differenze</th><th>Prod</th><th>Test</th></tr></thead><tbody>';
+    let lastSec = null;
     for (const r of results) {
+      if (rad && r.section !== lastSec) {
+        lastSec = r.section;
+        h += '<tr class="grp"><td colspan="5">' + escHtml(SECTION_LABEL[r.section] || 'Altro') + '</td></tr>';
+      }
       const link = r.status === 'diff' || r.status === 'onlyProd' || r.status === 'onlyTest';
       const name = link ? '<a href="#jsec-' + r.idx + '" data-sec="' + r.idx + '">' + escHtml(r.rel) + '</a>' : escHtml(r.rel);
       let det = '';
-      if (r.status === 'diff') {
-        det = r.model
-          ? '<span class="nadd">+' + r.model.adds + '</span> <span class="ndel">−' + r.model.dels + '</span> <span class="muted">· ' + plural(r.model.blocks, 'blocco', 'blocchi') + '</span>'
-          : '<span class="muted">' + (r.kind === 'image' ? 'immagine diversa' : 'file binario diverso') + '</span>';
+      if (r.model && (r.model.adds + r.model.dels)) {
+        det = '<span class="nadd">+' + r.model.adds + '</span> <span class="ndel">−' + r.model.dels + '</span> <span class="muted">· ' + plural(r.model.blocks, 'blocco', 'blocchi') + '</span>';
+      } else if (r.status === 'diff') {
+        det = '<span class="muted">' + (r.kind === 'image' ? 'immagine diversa' : 'file binario diverso') + '</span>';
       }
       h += '<tr><td class="fn">' + name + '</td><td>' + BADGE[r.status] + '</td><td class="num">' + det +
         '</td><td class="num">' + fmtSize(r.sizeP) + '</td><td class="num">' + fmtSize(r.sizeT) + '</td></tr>';
@@ -1117,10 +1495,12 @@ window.TK = (function () {
 
     for (const r of results) {
       if (r.status === 'diff') h += r.model ? textSection(r) : r.kind === 'image' ? imageSection(r) : binarySection(r);
-      else if (r.status === 'onlyProd' || r.status === 'onlyTest') h += missingSection(r);
+      else if (r.status === 'onlyProd' || r.status === 'onlyTest') h += r.model ? textSection(r) : missingSection(r);
     }
     $('#jResult').innerHTML = h;
   }
+
+  paintMode(); paintSide('prod'); paintSide('test'); renderAll();
 
   const colHead = () => '<div class="colhead"><div>Produzione</div><div>Test</div></div>';
 
@@ -1134,9 +1514,10 @@ window.TK = (function () {
     }
     const cols = sbs ? '<colgroup><col style="width:52px"><col><col style="width:52px"><col></colgroup>'
       : '<colgroup><col style="width:52px"><col style="width:52px"><col style="width:22px"><col></colgroup>';
-    return '<details class="file" id="jsec-' + r.idx + '" open><summary><span class="fname">' + escHtml(r.rel) + '</span>' + BADGE.diff +
+    return '<details class="file" id="jsec-' + r.idx + '" open><summary><span class="fname">' + escHtml(r.rel) + '</span>' + BADGE[r.status] +
       ' <span class="nadd">+' + m.adds + '</span><span class="ndel">−' + m.dels + '</span><span class="muted">' +
       plural(m.blocks, 'blocco', 'blocchi') + ' · Prod ' + r.A.length + ' righe, Test ' + r.B.length + ' righe</span></summary>' +
+      (r.status !== 'diff' ? '<div class="note">Presente solo in ' + (r.status === 'onlyProd' ? 'Prod' : 'Test') + ': blocco aggiunto o rimosso, oppure la sua chiave è cambiata (sezione rinominata, campo spostato).</div>' : '') +
       (m.coarse ? '<div class="note">Differenze troppo estese per un confronto riga per riga: il file è mostrato come sostituito per intero.</div>' : '') +
       (sbs ? colHead() : '') +
       '<div class="scroll"><table class="diff ' + (sbs ? 'sbs' : 'inl') + '">' + cols + '<tbody>' + rows + '</tbody></table></div></details>';
@@ -1222,7 +1603,7 @@ window.TK = (function () {
     tr.remove();
   });
 
-  TK.register('jasper', {});
+  TK.register('jasper', { onHide() { openSettings(false); } });
 })();
 </script>
 
@@ -1850,78 +2231,7 @@ window.TK = (function () {
     return Math.min(Math.max(lineCount * 20 + 20, minHeight), maxHeight) + 'px';
   }
 
-  function extractInnerHTMLElements(obj, path = '') {
-    const results = [];
-    if (!obj || typeof obj !== 'object') return results;
-    if (obj.innerHTML) results.push({ path: path || 'root', innerHTML: obj.innerHTML, type: obj.type || 'unknown' });
-    if (Array.isArray(obj.elements)) obj.elements.forEach((el, idx) => results.push(...extractInnerHTMLElements(el, `${path}/elements[${idx}]`)));
-    if (obj.editActivityLayoutModel) results.push(...extractInnerHTMLElements(obj.editActivityLayoutModel, 'editActivityLayoutModel'));
-    return results;
-  }
-
-  const UNIT = 4;   // un livello di rientro = 4 spazi = 1 tab
-
-  // Ogni gruppo di UNIT spazi iniziali diventa un tab
-  function spacesToTabs(code) {
-    return code.split('\n').map(line => {
-      let lead = 0;
-      while (lead < line.length && line[lead] === ' ') lead++;
-      if (lead === 0) return line;
-      return '\t'.repeat(Math.floor(lead / UNIT)) + ' '.repeat(lead % UNIT) + line.slice(lead);
-    }).join('\n');
-  }
-
-  const leadOf = l => l.length - l.replace(/^ +/, '').length;
-  const expandLeadTabs = l => l.replace(/^[ \t]+/, ws => ws.replace(/\t/g, ' '.repeat(UNIT)));
-  // "/*" fuori da una stringa (controllo semplice: virgolette bilanciate prima del commento)
-  function opensComment(line) {
-    const i = line.indexOf('/*');
-    if (i < 0 || line.indexOf('*/', i + 2) >= 0) return false;
-    const before = line.slice(0, i);
-    return (before.split('"').length - 1) % 2 === 0 && (before.split("'").length - 1) % 2 === 0 && (before.split('`').length - 1) % 2 === 0;
-  }
-
-  // js-beautify non tocca l'interno dei commenti /* ... */ e ci somma il rientro corrente:
-  // il codice commentato finisce spostato molto a destra. Qui lo si ri-allinea un livello
-  // sotto la riga che apre il commento, mantenendo la struttura interna.
-  function realignBlockComments(code) {
-    const lines = code.split('\n').map(expandLeadTabs);
-    for (let i = 0; i < lines.length; i++) {
-      if (!opensComment(lines[i])) continue;
-      let j = i + 1;
-      while (j < lines.length && lines[j].indexOf('*/') < 0) j++;
-      if (j >= lines.length) break;
-      const body = [];
-      for (let k = i + 1; k <= j; k++) body.push(k);
-      const nonBlank = body.filter(k => lines[k].trim());
-      // stile JSDoc ( * ... ) già allineato: lo lascio stare
-      if (nonBlank.every(k => lines[k].trim().startsWith('*'))) { i = j; continue; }
-      const closeOnly = lines[j].trim() === '*/';
-      const measured = nonBlank.filter(k => !(k === j && closeOnly));
-      if (measured.length) {
-        const min = Math.min(...measured.map(k => leadOf(lines[k])));
-        const base = leadOf(lines[i]);
-        for (const k of measured) lines[k] = ' '.repeat(base + UNIT + leadOf(lines[k]) - min) + lines[k].trimStart();
-        if (closeOnly) lines[j] = ' '.repeat(base) + '*/';
-      }
-      i = j;
-    }
-    return lines.join('\n');
-  }
-
-  function formatCode(code, type) {
-    if (!code) return '';
-    const src = String(code).replace(/\r\n?/g, '\n');
-    const baseOpts = { indent_with_tabs: false, indent_size: UNIT };
-    let result = src;
-    try {
-      if (type === 'css') result = css_beautify(src, { ...baseOpts });
-      else if (type === 'html') result = html_beautify(src, { ...baseOpts, wrap_line_length: 120 });
-      else if (type === 'javascript') result = js_beautify(src, { ...baseOpts, space_in_empty_paren: true });
-    } catch (e) { console.error('Format error:', e); }
-    if (type === 'javascript' || type === 'css') result = realignBlockComments(result);
-    return spacesToTabs(result);
-  }
+  const formatCode = TK.rad.formatCode;
 
   function cmOptions(mode) {
     return { mode, lineNumbers: true, theme: 'tk', lineWrapping: true, readOnly: false, indentUnit: 4, tabSize: 4, indentWithTabs: true };
@@ -2039,7 +2349,7 @@ window.TK = (function () {
     $('radBeanModule').textContent = data.module || '-';
 
     // innerHTML
-    const innerEls = extractInnerHTMLElements(data);
+    const innerEls = TK.rad.htmlBlocks(data);
     const innerCard = $('radInnerCard'), innerBody = $('radInnerBody');
     if (innerEls.length > 0) {
       innerCard.classList.remove('hidden');
@@ -2047,12 +2357,12 @@ window.TK = (function () {
       innerBody.innerHTML = '';
       innerEls.forEach((el, idx) => {
         const key = `innerHTML_${idx}`;
-        const formatted = formatCode(el.innerHTML, 'html');
+        const formatted = formatCode(el.html, 'html');
         const card = document.createElement('div');
         card.className = 'el-card';
         card.innerHTML = `
           <div class="el-card-head">
-            <div class="el-card-head-l"><span class="badge orange">${escapeHtml(el.type)}</span></div>
+            <div class="el-card-head-l"><span class="badge ${el.kind === 'template' ? 'purple' : 'orange'}">${escapeHtml(el.kind === 'template' ? 'template' : el.type)}</span><span class="action-meta">${escapeHtml(el.label)}</span></div>
             ${copyBtn(key)}
           </div>
           <div class="editor-wrap"><textarea id="${edId(key)}"></textarea></div>`;
@@ -2131,7 +2441,7 @@ window.TK = (function () {
 (() => {
   const root = document.documentElement;
   const VIEWS = ['home', 'jasper', 'json', 'rad'];
-  const TITLES = { home: 'Toolbox', jasper: 'Confronto report Jasper', json: 'JSON Log Parser', rad: 'RAD Viewer' };
+  const TITLES = { home: 'Toolbox', jasper: 'Confronto file', json: 'JSON Log Parser', rad: 'RAD Viewer' };
   let current = null;
 
   function route() {
