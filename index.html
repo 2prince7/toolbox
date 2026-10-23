@@ -506,11 +506,11 @@ body[data-app="json"] .main { padding-bottom: 24px; }
     <span class="txt">Toolbox</span>
   </a>
   <nav class="appnav" aria-label="Strumenti">
-    <a class="navbtn" href="#jasper" data-target="jasper">
+    <a class="navbtn" href="#file" data-target="jasper">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M13 6h3a2 2 0 0 1 2 2v7.5"/><polyline points="15 3 12 6 15 9"/><path d="M11 18H8a2 2 0 0 1-2-2V8.5"/><polyline points="9 15 12 18 9 21"/></svg>
       <span class="long">Confronto file</span><span class="short">Confronto</span>
     </a>
-    <a class="navbtn" href="#json" data-target="json">
+    <a class="navbtn" href="#log" data-target="json">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3c-2 0-3 1-3 3v4c0 2-1 3-3 3 2 0 3 1 3 3v4c0 2 1 3 3 3"/><path d="M17 3c2 0 3 1 3 3v4c0 2 1 3 3 3-2 0-3 1-3 3v4c0 2-1 3-3 3"/></svg>
       <span class="long">JSON Log Parser</span><span class="short">JSON</span>
     </a>
@@ -532,13 +532,13 @@ body[data-app="json"] .main { padding-bottom: 24px; }
     <div class="home">
       <h1>Toolbox</h1>
       <div class="home-grid">
-        <a class="home-card" href="#jasper">
+        <a class="home-card" href="#file">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M13 6h3a2 2 0 0 1 2 2v7.5"/><polyline points="15 3 12 6 15 9"/><path d="M11 18H8a2 2 0 0 1-2-2V8.5"/><polyline points="9 15 12 18 9 21"/></svg></span>
           <h2>Confronto file</h2>
           <p>Confronta Test e Produzione: i file di un report Jasper uno per uno, oppure due RAD JSON scompattati blocco per blocco (page function, CSS, innerHTML, eventi…).</p>
           <span class="go">Apri →</span>
         </a>
-        <a class="home-card" href="#json">
+        <a class="home-card" href="#log">
           <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3c-2 0-3 1-3 3v4c0 2-1 3-3 3 2 0 3 1 3 3v4c0 2 1 3 3 3"/><path d="M17 3c2 0 3 1 3 3v4c0 2 1 3 3 3-2 0-3 1-3 3v4c0 2-1 3-3 3"/></svg></span>
           <h2>JSON Log Parser</h2>
           <p>Estrae e formatta il JSON annidato nei log, con vista schema, percorso delle chiavi e ricerca su più schede affiancate.</p>
@@ -2444,14 +2444,17 @@ TK.rad = (function () {
 <script>
 (() => {
   const root = document.documentElement;
-  const VIEWS = ['home', 'jasper', 'json', 'rad'];
+  // hash dell'URL → vista interna; i vecchi hash (#jasper, #json) vengono reindirizzati ai nuovi
+  const HASH_VIEW = { '': 'home', file: 'jasper', log: 'json', rad: 'rad' };
+  const OLD_HASH = { jasper: 'file', json: 'log' };
   const TITLES = { home: 'Toolbox', jasper: 'Confronto file', json: 'JSON Log Parser', rad: 'RAD Viewer' };
   let current = null;
 
   function route() {
     const h = location.hash.replace(/^#/, '');
-    const v = h === '' ? 'home' : h;
-    if (!VIEWS.includes(v)) return;          // hash sconosciuti: resta dove sei
+    if (OLD_HASH[h]) { location.replace('#' + OLD_HASH[h]); return; }   // il cambio di hash richiama route()
+    const v = HASH_VIEW[h];
+    if (!v) return;                          // hash sconosciuti: resta dove sei
     if (v === current) return;
     if (current && TK.apps[current]?.onHide) TK.apps[current].onHide();
     document.querySelectorAll('main > section[data-view]').forEach(s => { s.hidden = s.dataset.view !== v; });
