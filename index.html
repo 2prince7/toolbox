@@ -257,6 +257,20 @@ select.field { height: 28px; border: 1px solid var(--border); border-radius: var
 .j-drop .side { font-weight: 600; font-size: 11.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .j-drop .fold-name { font-weight: 600; font-size: 15px; word-break: break-all; }
 .j-drop .info { flex: 1; min-width: 0; }
+.j-drop .fold-name { display: flex; align-items: center; gap: 6px; }
+.j-tip { position: relative; display: inline-flex; flex-shrink: 0; }
+.j-tip-btn { display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border: 0; border-radius: 50%; background: var(--accent-soft); color: var(--accent); cursor: help; }
+.j-tip-btn svg { width: 13px; height: 13px; }
+.j-tip-pop {
+  display: none; position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); z-index: 40;
+  min-width: 220px; max-width: min(420px, 80vw); max-height: 320px; overflow: auto; padding: 8px 0;
+  background: var(--surface); border: 1px solid var(--border-strong); border-radius: 8px; box-shadow: var(--shadow);
+  font-size: 12.5px; font-weight: 400; cursor: default;
+}
+.j-tip:hover .j-tip-pop, .j-tip:focus-within .j-tip-pop { display: block; }
+.j-tip-pop .hd { padding: 0 12px 6px; margin-bottom: 4px; border-bottom: 1px solid var(--border); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.j-tip-pop ul { list-style: none; margin: 0; padding: 0; }
+.j-tip-pop li { padding: 2px 12px; font-family: var(--mono); word-break: break-all; }
 .j-opts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; margin: 14px 0 16px; }
 .j-opts label { display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .j-hint { color: var(--muted); font-size: 12.5px; margin: 0 0 16px; }
@@ -526,28 +540,29 @@ body[data-app="json"] .main { padding-bottom: 24px; }
         <div>
           <h1><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="M13 6h3a2 2 0 0 1 2 2v7.5"/><polyline points="15 3 12 6 15 9"/><path d="M11 18H8a2 2 0 0 1-2-2V8.5"/><polyline points="9 15 12 18 9 21"/></svg></span>Confronto report Jasper</h1>
         </div>
+        <button class="btn danger" type="button" id="jClear" disabled>Pulisci</button>
       </div>
 
       <div class="j-pickers">
         <div class="j-drop" id="jDropProd" tabindex="0">
           <div class="j-drop-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
           <div class="info">
-            <div class="side">Produzione · sinistra</div>
-            <div class="fold-name" id="jNameProd">Nessuna cartella</div>
-            <div class="muted" id="jInfoProd">Trascina qui la cartella oppure scegli</div>
+            <div class="side">Produzione</div>
+            <div class="fold-name" id="jNameProd">File non caricati</div>
+            <div class="muted" id="jInfoProd">Trascina qui i file oppure scegli</div>
           </div>
-          <button class="btn" type="button" data-pick="prod">Scegli cartella…</button>
-          <input type="file" id="jInProd" webkitdirectory multiple hidden>
+          <button class="btn" type="button" data-pick="prod"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Scegli file…</button>
+          <input type="file" id="jInProd" multiple hidden>
         </div>
         <div class="j-drop" id="jDropTest" tabindex="0">
           <div class="j-drop-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div>
           <div class="info">
-            <div class="side">Test · destra</div>
-            <div class="fold-name" id="jNameTest">Nessuna cartella</div>
-            <div class="muted" id="jInfoTest">Trascina qui la cartella oppure scegli</div>
+            <div class="side">Test</div>
+            <div class="fold-name" id="jNameTest">File non caricati</div>
+            <div class="muted" id="jInfoTest">Trascina qui i file oppure scegli</div>
           </div>
-          <button class="btn" type="button" data-pick="test">Scegli cartella…</button>
-          <input type="file" id="jInTest" webkitdirectory multiple hidden>
+          <button class="btn" type="button" data-pick="test"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>Scegli file…</button>
+          <input type="file" id="jInTest" multiple hidden>
         </div>
       </div>
 
@@ -567,7 +582,7 @@ body[data-app="json"] .main { padding-bottom: 24px; }
         </div>
       </div>
 
-      <div id="jResult"><div class="empty-state">Seleziona le due cartelle da confrontare.</div></div>
+      <div id="jResult"><div class="empty-state">Carica i file di Produzione e di Test da confrontare.</div></div>
     </div>
   </section>
 
@@ -936,69 +951,76 @@ window.TK = (function () {
   };
   const capOf = side => side === 'prod' ? 'Prod' : 'Test';
 
+  const ICON_INFO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+  const EMPTY_HINT = 'Trascina qui i file oppure scegli';
+
+  function paintSide(side) {
+    const cap = capOf(side), data = sides[side];
+    const nameEl = $('#jName' + cap), info = $('#jInfo' + cap);
+    const n = data ? data.files.size : 0;
+    $('#jDrop' + cap).classList.toggle('loaded', n > 0);
+    if (!n) {
+      nameEl.textContent = 'File non caricati';
+      info.textContent = data ? 'Nessun file trovato' : EMPTY_HINT;
+    } else {
+      const names = [...data.files.keys()];
+      nameEl.innerHTML = 'File caricati <span class="j-tip"><button type="button" class="j-tip-btn" aria-label="Elenco dei file caricati">' + ICON_INFO +
+        '</button><span class="j-tip-pop" role="tooltip"><div class="hd">' + plural(n, 'file', 'file') + '</div><ul>' +
+        names.map(x => '<li>' + escHtml(x) + '</li>').join('') + '</ul></span></span>';
+      info.textContent = plural(n, 'file', 'file');
+    }
+    $('#jClear').disabled = !sides.prod && !sides.test;
+  }
+
   function setSide(side, data) {
     sides[side] = data;
-    const cap = capOf(side);
-    $('#jName' + cap).textContent = data.name;
-    $('#jInfo' + cap).textContent = data.files.size ? plural(data.files.size, 'file', 'file') : 'Cartella vuota';
-    $('#jDrop' + cap).classList.add('loaded');
+    paintSide(side);
     compare();
   }
 
-  function fromInput(fileList) {
+  // Solo file selezionati singolarmente: le cartelle (e il loro contenuto) non vengono caricate.
+  // La chiave di confronto è il nome del file.
+  function buildSide(fileList) {
     const files = new Map();
-    let name = '';
-    for (const f of fileList) {
-      const parts = (f.webkitRelativePath || f.name).split('/');
-      if (!name) name = parts.length > 1 ? parts[0] : '(file selezionati)';
-      const rel = parts.length > 1 ? parts.slice(1).join('/') : parts[0];
-      if (!SKIP.test(rel)) files.set(rel, f);
-    }
-    return { name: name || '(vuota)', files };
+    for (const f of fileList) if (!SKIP.test(f.name)) files.set(f.name, f);
+    return { files: new Map([...files].sort((a, b) => a[0].localeCompare(b[0], 'it', { numeric: true, sensitivity: 'base' }))) };
   }
 
-  const readEntries = r => new Promise((res, rej) => r.readEntries(res, rej));
-  const entryFile = e => new Promise((res, rej) => e.file(res, rej));
-  async function walk(dir, prefix, map) {
-    const reader = dir.createReader();
-    for (;;) {
-      const batch = await readEntries(reader);
-      if (!batch.length) break;
-      for (const e of batch) {
-        if (e.isFile) { if (!SKIP.test(prefix + e.name)) map.set(prefix + e.name, await entryFile(e)); }
-        else if (e.isDirectory) await walk(e, prefix + e.name + '/', map);
-      }
-    }
-    return map;
-  }
-  async function fromDrop(entries) {
-    if (entries.length === 1 && entries[0].isDirectory) return { name: entries[0].name, files: await walk(entries[0], '', new Map()) };
-    const files = new Map();
-    for (const e of entries) {
-      if (e.isFile) files.set(e.name, await entryFile(e));
-      else await walk(e, e.name + '/', files);
-    }
-    return { name: '(file trascinati)', files };
-  }
 
   for (const side of ['prod', 'test']) {
     const cap = capOf(side);
     const zone = $('#jDrop' + cap), input = $('#jIn' + cap);
-    zone.addEventListener('click', () => input.click());
-    zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); } });
+    zone.addEventListener('click', e => { if (!e.target.closest('.j-tip')) input.click(); });
+    zone.addEventListener('keydown', e => { if (e.target === zone && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); input.click(); } });
     input.addEventListener('click', e => e.stopPropagation());
-    input.addEventListener('change', () => { if (input.files.length) setSide(side, fromInput(input.files)); input.value = ''; });
+    input.addEventListener('change', () => { if (input.files.length) setSide(side, buildSide(input.files)); input.value = ''; });
     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('over'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('over'));
     zone.addEventListener('drop', e => {
       e.preventDefault(); zone.classList.remove('over');
-      const entries = [...e.dataTransfer.items].map(i => i.webkitGetAsEntry && i.webkitGetAsEntry()).filter(Boolean);
-      if (entries.length) fromDrop(entries).then(d => setSide(side, d)).catch(err => alert('Errore nella lettura: ' + err));
+      // si tengono solo i file trascinati direttamente; le cartelle vengono ignorate
+      const files = [];
+      for (const it of e.dataTransfer.items) {
+        if (it.kind !== 'file') continue;
+        const entry = it.webkitGetAsEntry && it.webkitGetAsEntry();
+        if (entry && !entry.isFile) continue;
+        const f = it.getAsFile();
+        if (f) files.push(f);
+      }
+      if (!files.length) { TK.toast('Le cartelle non vengono caricate: trascina i file'); return; }
+      setSide(side, buildSide(files));
     });
   }
   document.querySelectorAll('#app-jasper [data-pick]').forEach(b => b.addEventListener('click', e => {
     e.stopPropagation(); $('#jIn' + capOf(b.dataset.pick)).click();
   }));
+  $('#jClear').addEventListener('click', () => {
+    runId++;                       // annulla un eventuale confronto in corso
+    sides.prod = sides.test = null;
+    results = [];
+    paintSide('prod'); paintSide('test');
+    renderAll();
+  });
   // evita che un file trascinato fuori dalle zone venga aperto dal browser
   window.addEventListener('dragover', e => e.preventDefault());
   window.addEventListener('drop', e => e.preventDefault());
@@ -1059,7 +1081,7 @@ window.TK = (function () {
     objectUrls.forEach(u => URL.revokeObjectURL(u));
     objectUrls = [];
     if (!results.length) {
-      $('#jResult').innerHTML = '<div class="empty-state">' + (sides.prod && sides.test ? 'Le cartelle non contengono file.' : 'Seleziona le due cartelle da confrontare.') + '</div>';
+      $('#jResult').innerHTML = '<div class="empty-state">' + (sides.prod && sides.test ? 'Nessun file da confrontare.' : 'Carica i file di Produzione e di Test da confrontare.') + '</div>';
       return;
     }
     const c = { same: 0, equiv: 0, diff: 0, onlyProd: 0, onlyTest: 0 };
@@ -1100,7 +1122,7 @@ window.TK = (function () {
     $('#jResult').innerHTML = h;
   }
 
-  const colHead = () => '<div class="colhead"><div>Prod · ' + escHtml(sides.prod.name) + '</div><div>Test · ' + escHtml(sides.test.name) + '</div></div>';
+  const colHead = () => '<div class="colhead"><div>Produzione</div><div>Test</div></div>';
 
   function textSection(r) {
     const m = r.model, ctx = opts.ctx === 'all' ? Infinity : +opts.ctx, sbs = opts.view === 'sbs';
@@ -1180,7 +1202,7 @@ window.TK = (function () {
   function missingSection(r) {
     const where = r.status === 'onlyProd' ? 'Prod' : 'Test', other = where === 'Prod' ? 'Test' : 'Prod';
     return '<details class="file" id="jsec-' + r.idx + '" open><summary><span class="fname">' + escHtml(r.rel) + '</span>' + BADGE[r.status] +
-      '</summary><div class="binmsg">Il file esiste solo nella cartella ' + where + ' e manca in ' + other + '. Controlla il nome (maiuscole/minuscole, estensione) o se va aggiunto.</div></details>';
+      '</summary><div class="binmsg">Il file è presente solo in ' + where + ' e manca in ' + other + '. Controlla il nome (maiuscole/minuscole, estensione) o se va aggiunto.</div></details>';
   }
 
   $('#jResult').addEventListener('click', e => {
